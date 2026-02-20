@@ -165,7 +165,7 @@ function renderRecaptcha() {
 
   recaptchaWidgetId.value = window.grecaptcha.render(recaptchaContainer.value, {
     sitekey: SITE_KEY,
-    size: 'normal', // or 'compact'
+    size: 'compact', // or 'normal'
     callback: onRecaptchaSuccess,
     'expired-callback': onRecaptchaExpired,
   });
