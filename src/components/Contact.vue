@@ -56,7 +56,7 @@
             <button
               type="submit"
               class="submit-btn pl-5 pr-5"
-              :disabled="isLoading || !captchaVerified"
+              :disabled="isLoading || !isVerified"
             >
               {{ isLoading ? "Sending..." : "Submit" }}
             </button>
