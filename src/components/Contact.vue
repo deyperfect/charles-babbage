@@ -60,6 +60,10 @@
             >
               {{ isLoading ? "Sending..." : "Submit" }}
             </button>
+
+            <div class="d-flex justify-content-end mt-2">
+              <div ref="recaptchaContainer"></div>
+            </div>
           </div>
         </form>
       </div>
@@ -68,7 +72,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onBeforeMount } from "vue";
 import { Notyf } from "notyf";
 import "notyf/notyf.min.css";
 
@@ -86,6 +90,11 @@ const isLoading = ref(false);
 const submitForm = async () => {
   if (!name.value || !email.value || !message.value) {
     notyf.error("Please fill in all fields.");
+    return;
+  }
+
+  if (!recaptchaToken.value) {
+    notyf.error("Please verify that you are not a robot.");
     return;
   }
 
@@ -124,6 +133,61 @@ const submitForm = async () => {
     console.log(error);
     isLoading.value = false;
     notyf.error("Failed to send message. Please try again.");
+  } finally {
+    // Reset reCAPTCHA after submission attempt
+    if (window.grecaptcha) {
+      window.grecaptcha.reset();
+    }
   }
 };
+
+const SITE_KEY = "6LfLsHEsAAAAADjhFx8x7ZLQ5GJq1kutubGy_Ygt";
+const recaptchaContainer = ref(null);
+const recaptchaWidgetId = ref(null);
+const recaptchaToken = ref("");
+
+function onRecaptchaSuccess(token) {
+  recaptchaToken.value = token;
+}
+
+function onRecaptchaExpired() {
+  recaptchaToken.value = '';
+}
+
+function renderRecaptcha() {
+  if (!window.grecaptcha) {
+    console.error('reCAPTCHA not loaded');
+    return;
+  }
+
+  recaptchaWidgetId.value = window.grecaptcha.render(recaptchaContainer.value, {
+    sitekey: SITE_KEY,
+    size: 'normal', // or 'compact'
+    callback: onRecaptchaSuccess,
+    'expired-callback': onRecaptchaExpired,
+  });
+}
+
+function resetRecaptcha() {
+  if (recaptchaWidgetId.value !== null) {
+    window.grecaptcha.reset(recaptchaWidgetId.value);
+    recaptchaToken.value = '';
+  }
+}
+
+onMounted(() => {
+  const interval = setInterval(() => {
+    if (window.grecaptcha && window.grecaptcha.render) {
+      renderRecaptcha();
+      clearInterval(interval);
+    }
+  }, 1000); 
+
+  onBeforeMount(() => {
+    clearInterval(interval);
+  });
+
+});
+
+
 </script>
