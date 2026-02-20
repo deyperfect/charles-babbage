@@ -56,7 +56,7 @@
             <button
               type="submit"
               class="submit-btn pl-5 pr-5"
-              :disabled="isLoading"
+              :disabled="isLoading || !captchaVerified"
             >
               {{ isLoading ? "Sending..." : "Submit" }}
             </button>
@@ -145,13 +145,16 @@ const SITE_KEY = "6LfLsHEsAAAAADjhFx8x7ZLQ5GJq1kutubGy_Ygt";
 const recaptchaContainer = ref(null);
 const recaptchaWidgetId = ref(null);
 const recaptchaToken = ref("");
+const isVerified = ref(false);
 
 function onRecaptchaSuccess(token) {
   recaptchaToken.value = token;
+  isVerified.value = true;
 }
 
 function onRecaptchaExpired() {
   recaptchaToken.value = '';
+  isVerified.value = false;
 }
 
 function renderRecaptcha() {
